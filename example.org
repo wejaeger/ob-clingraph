@@ -1,0 +1,32 @@
+#+title: ob-clingo example
+
+# syntax highlighting for html exports
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
+
+#+name: graph
+#+caption: Problem instance
+#+begin_src clingo :tangle graph.lp :results none
+node(1). node(2). node(3). node(4). node(5). node(6).
+edge((1, 2)). edge((2, 1)). edge((4, 1)). edge((2, 3)). edge((2, 6)).
+edge((3, 4)). edge((3, 5)). edge((5, 4)). edge((6, 3)).
+#+end_src
+
+#+name: vizualize
+#+caption: Visualization
+#+begin_src clingraph :stdin graph.lp :type digraph :results file graphics :file g1.png :output-dir img
+  attr(graph_nodes, g1, style, filled).
+#+end_src
+
+#+RESULTS: vizualize
+[[file:img/g1.png]]
+
+
+
+
+
+* Instructions
+1. Place cursor on the code block named =graph=
+2. Press =C-c C-v t= to generate the problem instance file =graph.lp=
+3. Place cursor on the code block named =vizualize=
+4. Press = C-c C-c= to execute the encoding and generate the output
+

@@ -1,0 +1,56 @@
+#+options: title:nil toc:nil num:nil ':t
+
+#+latex_header: \topmargin=-0.45in
+#+latex_header: \evensidemargin=0in
+#+latex_header: \oddsidemargin=0in
+#+latex_header: \textwidth=6.5in
+
+
+# syntax highlighting for html exports
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
+
+* ob-clingraph
+~Org-Babel~ mode for generating graph visualizations using [[https://clingraph.readthedocs.io/en/latest/][Potassco clingraph]]
+
+
+* Installation
+- Copy the ~ob-clinggraph.el~ file to a directory in your file system.
+- Add this to your init file:
+  #+begin_src elisp
+  (add-to-list 'load-path "/path/to/install-directory")
+  (require 'ob-clingraph)
+  #+end_src
+
+- If you use ~use-package~, you can also write
+  #+begin_src elisp
+  (use-package ob-clingraph
+    :load-path "/path/to/install-directory"
+  )
+  #+end_src
+** Dependencies
+In order to use it you must have [[https://clingraph.readthedocs.io/en/latest/][Potassco clingraph]] installed.
+
+* Usage
+  See =example.org= in this directory
+
+* Supported header arguments
+- =:facts= :: - Files containing facts that define the graph. [[https://clingraph.readthedocs.io/en/latest/clingraph/syntax.html][See the allowed syntax]].
+- =:stdin= :: - A single =JSON= file using clingos output option =--outf=2=.
+  In this case, the facts defining the graphs will be loaded from each stable model.
+  Standard input in one of the following formats:
+  - A list of facts
+  - A =json= from clingos output option =--outf=2=
+- =:out= :: - Type of output ={facts|dot|render|animate|tex}=, defaults to =facts=
+  - if =:file= header argument is used, then =:out= is set to =render=
+- =:default-graph= :: The name of the default graph.
+  All nodes and edges with arity 1 will be assigned to this graph, defaults to =default=
+  - if =:file= header argument is used, then =:default-graph= is set to the file name without extension
+- =type= :: - The type of the graph ={graph|digraph}=, defaults to =graph=
+- =format= :: - Format to save the graph ={pdf|png|svg}=, defaults to =pdf=
+  - if =:file= header argument is used, then =:format= is set to the filename extension
+
+- =options= :: further command line options, list available options by invoking =clingraph --help=
+
+
+
+  
