@@ -97,16 +97,16 @@
 	 ;; set the type parameter
 	 (type (cdr (assoc :type processed-params)))
 
-	 ;; set the format parameter
-	 (format (cdr (assoc :format processed-params)))
+	 ;; set the viz-encoding parameter
+	 (viz-encoding (cdr (assoc :viz-encoding processed-params)))
 
 	 ;; set the options parameter
 	 (options (cdr (assoc :options processed-params)))
 
-	 ;; get out, default-graph and format options from file parameter
+	 ;; get out, default-graph and format options from `:file' header argument
 	 (file (cdr (assoc :file processed-params)))
-	 (out (if file "render" (if out out "facts")))
-	 (format (if file (file-name-extension file) (if format format "pdf")))
+	 (out (if file "render" (if out out nil)))
+	 (format (if file (file-name-extension file) "pdf"))
 	 (default-graph (if file (file-name-base file) (if default-graph default-graph "default")))
 	 (dir (if file  (cdr (assoc :output-dir processed-params)) "out"))
 
@@ -117,17 +117,40 @@
          ;; expand the body with `org-babel-expand-body:clingraph'
          (full-body (org-babel-expand-body:clingraph body params processed-params))
 
+ 	 ;; if `:viz-encoding' concatenate full-body and viz-encoding file to a new temp file
+         (viz-encoding (when viz-encoding
+           (let* (
+                  (temp-viz-file (org-babel-temp-file "clingraph-"))
+                 )
+                 (with-temp-buffer  (insert full-body)
+                                    (insert-file-contents viz-encoding)
+                                    (write-region (point-min) (point-max) temp-viz-file))
+		 temp-viz-file
+           )))
+
+	 ;; if `:viz-encoding' ensure, that `:output-dir' header argument is set
+         (output-dir (when viz-encoding (or (cdr (assoc :output-dir  processed-params))
+         (error "clingraph requires a \":output-dir\" header argument when \":viz-encoding\" is set."))))
+
+	 ;; when `:viz-encoding' then determine 'select-model' and 'dir' options from `:output-dir'
+         (select-model (when viz-encoding (file-name-base output-dir)))
+         (dir (when viz-encoding (file-name-directory output-dir)))
+
+
          (temp-file (org-babel-temp-file "clingraph-"))
          (clingraph (executable-find "clingraph"))
-         (cmd (concat (shell-quote-argument (expand-file-name clingraph))
+         (cmd (concat
+	              "cat " (org-babel-process-file-name temp-file) " | "
+	              (shell-quote-argument (expand-file-name clingraph))
                       (when out (concat " --out " out))
                       (when default-graph (concat " --default-graph " default-graph))
                       (when dir (concat " --dir " dir))
                       (when type (concat " --type " type))
                       (when format (concat " --format " format))
+		      (when viz-encoding (concat " --viz-encoding " viz-encoding))
+		      (when select-model (concat " --select-model " select-model))
 		      (when options (concat " " options))
 		      (when facts (concat " " (org-babel-process-file-name facts)))
-                      " " (org-babel-process-file-name temp-file)
 		      (when stdin (concat " " (org-babel-process-file-name stdin)))
 	      )
 	 )

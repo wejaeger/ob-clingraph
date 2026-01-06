@@ -35,20 +35,23 @@ In order to use it you must have [[https://clingraph.readthedocs.io/en/latest/][
 
 * Supported header arguments
 - =:facts= :: - Files containing facts that define the graph. [[https://clingraph.readthedocs.io/en/latest/clingraph/syntax.html][See the allowed syntax]].
-- =:stdin= :: - A single =JSON= file using clingos output option =--outf=2=.
+- =:stdin= :: - A single =JSON= file using clingo's output option =--outf=2=.
   In this case, the facts defining the graphs will be loaded from each stable model.
-  Standard input in one of the following formats:
-  - A list of facts
-  - A =json= from clingos output option =--outf=2=
+- =:viz-encoding= - A visualization encoding that will be used to generate the graph facts
+  by calling clingo with the input. This encoding is expected to have only one stable model.
+  If this header argument is set, then
+  - =:output-dir= must also be set as =DIRECTORY/MODEL-IDX=, where =MODEL-IDX= is the
+    zero based index for accessing the models. Negative indexes are also allowed
+    (-1 refers to the last model)
+
+    Example: =out/0= 
+  - code block body is appended to  file =:viz-encoding=
 - =:out= :: - Type of output ={facts|dot|render|animate|tex}=, defaults to =facts=
   - if =:file= header argument is used, then =:out= is set to =render=
 - =:default-graph= :: The name of the default graph.
   All nodes and edges with arity 1 will be assigned to this graph, defaults to =default=
   - if =:file= header argument is used, then =:default-graph= is set to the file name without extension
 - =type= :: - The type of the graph ={graph|digraph}=, defaults to =graph=
-- =format= :: - Format to save the graph ={pdf|png|svg}=, defaults to =pdf=
-  - if =:file= header argument is used, then =:format= is set to the filename extension
-
 - =options= :: further command line options, list available options by invoking =clingraph --help=
 
 
