@@ -28,7 +28,7 @@
   )
   #+end_src
 ** Dependencies
-In order to use it you must have [[https://clingraph.readthedocs.io/en/latest/][Potassco clingraph]] installed.
+In order to use it you must have [[https://clingraph.readthedocs.io/en/latest/][Potassco clingraph]] and [[https://graphviz.org/download/][graphviz]] installed.
 
 * Usage
   See =example.org= in this directory
@@ -37,22 +37,19 @@ In order to use it you must have [[https://clingraph.readthedocs.io/en/latest/][
 - =:facts= :: - Files containing facts that define the graph. [[https://clingraph.readthedocs.io/en/latest/clingraph/syntax.html][See the allowed syntax]].
 - =:stdin= :: - A single =JSON= file using clingo's output option =--outf=2=.
   In this case, the facts defining the graphs will be loaded from each stable model.
-- =:viz-encoding= - A visualization encoding that will be used to generate the graph facts
+- =:viz-encoding= :: - A visualization encoding that will be used to generate the graph facts
   by calling clingo with the input. This encoding is expected to have only one stable model.
-  If this header argument is set, then
-  - =:output-dir= must also be set as =DIRECTORY/MODEL-IDX=, where =MODEL-IDX= is the
-    zero based index for accessing the models. Negative indexes are also allowed
-    (-1 refers to the last model)
-
-    Example: =out/0= 
   - code block body is appended to  file =:viz-encoding=
 - =:out= :: - Type of output ={facts|dot|render|animate|tex}=, defaults to =facts=
-  - if =:file= header argument is used, then =:out= is set to =render=
+  - if =:file= header argument is used, then =:out= is set to =animate= if file name extension is =gif=
+    else it is set to =render=
 - =:default-graph= :: The name of the default graph.
   All nodes and edges with arity 1 will be assigned to this graph, defaults to =default=
   - if =:file= header argument is used, then =:default-graph= is set to the file name without extension
-- =type= :: - The type of the graph ={graph|digraph}=, defaults to =graph=
-- =options= :: further command line options, list available options by invoking =clingraph --help=
+- =:type= :: - The type of the graph ={graph|digraph}=, defaults to =graph=
+- =:engine= :: Layout command used by [[https://graphviz.org/][graphviz]] {dot|neato|twopi|circo|fdp|osage|patchwork|sfdp},
+  defaults to =dot=
+- =:options= :: further command line options, list available options by invoking =clingraph --help=
 
 
 

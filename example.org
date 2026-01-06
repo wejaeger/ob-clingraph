@@ -22,8 +22,6 @@ edge((3, 4)). edge((3, 5)). edge((5, 4)). edge((6, 3)).
 
 
 
-
-
 * Instructions
 1. Place cursor on the code block named =graph=
 2. Press =C-c C-v t= to generate the problem instance file =graph.lp=

@@ -5,7 +5,7 @@
 ;; Author: Werner Jäger
 ;; Keywords: emacs, org-mode, org-babel, clingo, clingraph, answer-set-programming, graphwiz
 ;; URL: https://github.com/wejaeger/ob-clingraph
-;; Version: 0.01
+;; Version: 0.2
 
 ;;; License:
 
@@ -100,15 +100,25 @@
 	 ;; set the viz-encoding parameter
 	 (viz-encoding (cdr (assoc :viz-encoding processed-params)))
 
+	 ;; set the engine parameter
+	 (engine (cdr (assoc :engine processed-params)))
+
 	 ;; set the options parameter
 	 (options (cdr (assoc :options processed-params)))
 
-	 ;; get out, default-graph and format options from `:file' header argument
+	 ;; get out, default-graph, select-model and format options from `:file' header argument
 	 (file (cdr (assoc :file processed-params)))
-	 (out (if file "render" (if out out nil)))
-	 (format (if file (file-name-extension file) "pdf"))
-	 (default-graph (if file (file-name-base file) (if default-graph default-graph "default")))
-	 (dir (if file  (cdr (assoc :output-dir processed-params)) "out"))
+	 (base-name (when file (file-name-base file)))
+	 (ext (when file (file-name-extension file)))
+	 (out (org-babel-clingraph-out-from-file file))
+	 (format (when file ext))
+	 (format (when (string-equal out "animate") nil))
+	 (default-graph (when file base-name (when default-graph default-graph)))
+	 (select-model base-name)
+
+         ;; get `dir' from `:output-dir' header argument
+	 (output-dir  (cdr (assoc :output-dir processed-params)))
+	 (dir (if output-dir output-dir (org-babel-process-file-name "")))
 
          ;; variables assigned for use in the block
          (vars (org-babel--get-vars processed-params))
@@ -128,13 +138,9 @@
 		 temp-viz-file
            )))
 
-	 ;; if `:viz-encoding' ensure, that `:output-dir' header argument is set
-         (output-dir (when viz-encoding (or (cdr (assoc :output-dir  processed-params))
-         (error "clingraph requires a \":output-dir\" header argument when \":viz-encoding\" is set."))))
-
-	 ;; when `:viz-encoding' then determine 'select-model' and 'dir' options from `:output-dir'
-         (select-model (when viz-encoding (file-name-base output-dir)))
-         (dir (when viz-encoding (file-name-directory output-dir)))
+	 ;; when `:viz-encoding' then determine 'select-model' and `name-format' options from `base-name'
+         (select-model (when viz-encoding (org-babel-clingraph-extract-int base-name)))
+	 (name-format (if select-model (replace-regexp-in-string "[0-9]+" "{model_number}" base-name) base-name))
 
 
          (temp-file (org-babel-temp-file "clingraph-"))
@@ -149,6 +155,8 @@
                       (when format (concat " --format " format))
 		      (when viz-encoding (concat " --viz-encoding " viz-encoding))
 		      (when select-model (concat " --select-model " select-model))
+		      (when name-format (concat " --name-format " name-format))
+		      (when engine (concat " --engine " engine))
 		      (when options (concat " " options))
 		      (when facts (concat " " (org-babel-process-file-name facts)))
 		      (when stdin (concat " " (org-babel-process-file-name stdin)))
@@ -173,6 +181,32 @@
    specifying a var of the same value."
   (format "%S" var))
 
+(defun org-babel-clingraph-out-from-file (file)
+  "if `file' is `nil' return `nil' else
+   return  `animate' if file extension is `gif', else
+   return `render'"
+
+  (let* (
+	  (ext (when file (file-name-extension file)))
+	  (ret (when ext (if (string-equal ext "gif") "animate" "render")))
+	)
+	ret
+  )
+)
+
+(defun org-babel-clingraph-extract-int (str)
+  "From string `str' extract first integer string"
+  (when str
+    (with-temp-buffer
+      (insert str)
+      (goto-char (point-min))
+      (if (re-search-forward "[0-9]+" nil t)
+        (match-string 0)
+        nil
+      )
+    )
+  )
+)
 
 (provide 'ob-clingraph)
 ;;; ob-clingraph.el ends here
