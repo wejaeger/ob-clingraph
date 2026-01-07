@@ -110,9 +110,9 @@
 	 (file (cdr (assoc :file processed-params)))
 	 (base-name (when file (file-name-base file)))
 	 (ext (when file (file-name-extension file)))
-	 (out (org-babel-clingraph-out-from-file file))
+	 (out (org-babel-clingraph-out-from-file file out))
 	 (format (when file ext))
-	 (format (when (string-equal out "animate") nil))
+	 (format (if (string-equal out "animate") nil format))
 	 (default-graph (when file base-name (when default-graph default-graph)))
 	 (select-model base-name)
 
@@ -181,14 +181,14 @@
    specifying a var of the same value."
   (format "%S" var))
 
-(defun org-babel-clingraph-out-from-file (file)
-  "if `file' is `nil' return `nil' else
+(defun org-babel-clingraph-out-from-file (file default)
+  "if `file' is `nil' return `default' else
    return  `animate' if file extension is `gif', else
    return `render'"
 
   (let* (
 	  (ext (when file (file-name-extension file)))
-	  (ret (when ext (if (string-equal ext "gif") "animate" "render")))
+	  (ret (if ext (if (string-equal ext "gif") "animate" "render") default))
 	)
 	ret
   )
