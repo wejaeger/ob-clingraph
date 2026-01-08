@@ -50,6 +50,8 @@ In order to use it you must have [[https://clingraph.readthedocs.io/en/latest/][
 - =:engine= :: Layout command used by [[https://graphviz.org/][graphviz]] {dot|neato|twopi|circo|fdp|osage|patchwork|sfdp},
   defaults to =dot=
 - =:options= :: further command line options, list available options by invoking =clingraph --help=
+- =:var= ::  a =:var NAME=ASSIGN= header argument inserts a Line =#const NAME = ASSIGN.= at the beginning
+  of the code block body.
 
 
 

@@ -3,28 +3,113 @@
 # syntax highlighting for html exports
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gongzhitaao.org/orgcss/org.css"/>
 
+First you need to extract all necessary source codes from their respective code blocks. To do so,
+press =C-c C-v t= 
+
+* Hamiltonian cycle
+
+The following code block defines a directed graph with six vertices. Source code is saved to file =out/graph.lp=
 #+name: graph
-#+caption: Problem instance
-#+begin_src clingo :tangle graph.lp :results none
+#+caption: A graph with 6 nodes
+#+begin_src text :tangle out/graph.lp :results none
 node(1). node(2). node(3). node(4). node(5). node(6).
 edge((1, 2)). edge((2, 1)). edge((4, 1)). edge((2, 3)). edge((2, 6)).
 edge((3, 4)). edge((3, 5)). edge((5, 4)). edge((6, 3)).
 #+end_src
 
+The following code block visualizes the graph and draws the edges that form an Hamiltonian cycle in blue.
+
+Execute the code block by placing the cursor within the code block and press =C-c C-c=.
 #+name: vizualize
-#+caption: Visualization
-#+begin_src clingraph :stdin graph.lp :type digraph :results file graphics :file g1.png :output-dir img
-  attr(graph_nodes, g1, style, filled).
+#+caption:  A Hammiltonian cycle in blue
+#+begin_src clingraph :stdin out/graph.lp :type digraph :results file graphics :file g1.png :output-dir out/img
+  attr(node, 6, color, red).
+  attr(edge, (6, 3), color, blue).
+  attr(edge, (3, 5), color, blue).
+  attr(edge, (5, 4), color, blue).
+  attr(edge, (4, 1), color, blue).
+  attr(edge, (1, 2), color, blue).
+  attr(edge, (2, 6), color, blue).
 #+end_src
 
-#+RESULTS: vizualize
-[[file:img/g1.png]]
+* Minotaur (animation)
 
+The following example is taken from [[https://github.com/potassco/clingraph/tree/master/examples/minotaur][Minotaur problem]] and adapted for demonstrating the usage of
+=ob-clingraph=. To execute the code blocks you need [[https://clingraph.readthedocs.io/en/latest/clingraph/installation.html][Potassco clingo]],  [[https://clingraph.readthedocs.io/en/latest/][Potassco clingraph]],
+[[https://github.com/wejaeger/ob-clingo][ob-clingo]], [[https://github.com/wejaeger/ob-clingraph][ob-clingraph]] and [[https://graphviz.org/download/][graphviz]].
 
+This code block defines the labyrinth. Source code is saved to file =out/instance.lp=.
+#+name: labyrinth
+#+caption: Minotaur instance
+#+begin_src clingo :tangle out/instance.lp :results none
+field(1..3,1..3).
+start(2,1).
+goal(3,2).
+mino(2,3).
+wall(2,1,2,2). wall(2,2,3,2). wall(2,2,2,3).
+wall(X,Y,XX,YY) :- wall(XX,YY,X,Y).
+maxsteps(10).
+#+end_src
 
-* Instructions
-1. Place cursor on the code block named =graph=
-2. Press =C-c C-v t= to generate the problem instance file =graph.lp=
-3. Place cursor on the code block named =vizualize=
-4. Press = C-c C-c= to execute the encoding and generate the output
+Now place the cursor inside the following code block and press =C-c C-c= to execute the code. It generates
+the file =out/minotaur.json= which contains one stable model.
+#+name: minotaur
+#+caption: Minotaur encoding
+#+begin_src clingo :options --outf=2 :instance out/instance.lp :results none file :file-ext json :output-dir out
+  %
+  % Solution
+  % * Can be replaced by a general encoding that uses the output predicates at/3 and mino/3
+  %
 
+  at(2,1,0). at(1,1,1). at(2,1,2). at(3,1,3). at(3,2,4).
+  mino(2,3,0). mino(1,2,1). mino(2,2,2). mino(2,2,3). mino(2,2,4).
+
+  #show at/3.
+  #show mino/3.
+#+end_src
+
+#+name: imgpath
+#+begin_src elisp :results value none
+  (org-babel-process-file-name "img/")
+#+end_src
+
+Press =C-c C-c= inside the next code block to create the animation file =out/minotaur.gif=.
+#+name: animation
+#+caption: Minitaron animation
+#+begin_src clingraph :stdin out/minotaur.json :viz-encoding out/instance.lp :type graph :engine neato :var imgpath=imgpath :results file graphics :file minotaur.gif :output-dir out/img
+%
+% Visualization
+%
+% Graphs
+graph(T) :- at(_,_,T).
+
+% Global graph attributes
+attr(graph, G, label, "") :- graph(G).
+attr(graph, G, style, invis) :- graph(G).
+attr(graph, G, nodesep, 1) :- graph(G).
+attr(graph, G, newrank, true) :- graph(G).
+attr(graph, G, imagepath, imgpath) :- graph(G).
+
+% Global node attributes
+attr(graph_nodes, G, shape, square) :- graph(G).
+attr(graph_nodes, G, style, filled) :- graph(G).
+attr(graph_nodes, G, fillcolor, white) :- graph(G).
+attr(graph_nodes, G, label, "") :- graph(G).
+attr(graph_nodes, G ,width,"0.5"):-graph(G).
+attr(graph_nodes, G ,width,"0.5"):-graph(G).
+
+% Nodes
+node(field(X,Y,G),G):- field(X,Y), graph(G).
+attr(node, field(X,Y,G), pos, @pos(X,Y)) :- field(X,Y), graph(G).
+attr(node, field(X,Y,G), image, "mino.png") :- mino(X,Y,G),   graph(G).
+attr(node, field(X,Y,G), image, "warrior.png") :- at(X,Y,G), graph(G).
+
+attr(node, N, fixedsize,       "true") :- attr(node,N,image,_).
+
+attr(node, field(X,Y,G), fillcolor,     green) :- at(X,Y,G), graph(G),     goal(X,Y).
+attr(node, field(X,Y,G),     style,    dotted) :- goal(X,Y), graph(G).
+
+% Edges to show subgrids
+edge((field(X,Y,G),field(X+1,Y,G)),G):- field(X,Y), field(X+1,Y), not wall(X,Y,X+1,Y), graph(G).
+edge((field(X,Y,G),field(X,Y+1,G)),G):- field(X,Y), field(X,Y+1), not wall(X,Y,X,Y+1), graph(G).
+#+end_src 

@@ -69,7 +69,7 @@
     (concat
      (mapconcat ;; define any variables
       (lambda (pair)
-        (format "%s=%S"
+        (format "#const %s = %s."
                 (car pair) (org-babel-clingraph-var-to-clingraph (cdr pair))))
       vars "\n")
      "\n" body "\n")))
